@@ -10,9 +10,6 @@ import { GUI } from 'https://cdn.skypack.dev/lil-gui';
 let camera, scene, renderer;
 
 
-
-
-
 const params = {
     clipIntersection: true,
     planeConstant: 0,
@@ -28,8 +25,7 @@ const clipPlanes = [
 init();
 render();
 
-function init() {
-
+function init_control() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -51,84 +47,38 @@ function init() {
     const light = new THREE.HemisphereLight(0xffffff, 0x080808, 1.5);
     light.position.set(- 1.25, 1, 1.25);
     scene.add(light);
+}
 
-    // const helper = new THREE.CameraHelper( light.shadow.camera );
-    // scene.add( helper );
-
-    //
-
-    const group = new THREE.Group();
-
-    for (let i = 1; i <= 30; i += 2) {
-
-        const geometry = new THREE.SphereGeometry(i / 30, 48, 24);
-
-        const material = new THREE.MeshLambertMaterial({
-
-            color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5),
-            side: THREE.DoubleSide,
-            clippingPlanes: clipPlanes,
-            clipIntersection: params.clipIntersection
-
-        });
-
-        group.add(new THREE.Mesh(geometry, material));
-
-    }
-
-    scene.add(group);
-
-    // helpers
-
+function init_gui() {
     const helpers = new THREE.Group();
     helpers.add(new THREE.PlaneHelper(clipPlanes[0], 2, 0xff0000));
     helpers.add(new THREE.PlaneHelper(clipPlanes[1], 2, 0x00ff00));
     helpers.add(new THREE.PlaneHelper(clipPlanes[2], 2, 0x0000ff));
-    helpers.visible = false;
+    helpers.visible = true;
     scene.add(helpers);
-
-    // gui
 
     const gui = new GUI();
 
-    gui.add(params, 'clipIntersection').name('clip intersection').onChange(function (value) {
-
-        const children = group.children;
-
-        for (let i = 0; i < children.length; i++) {
-
-            children[i].material.clipIntersection = value;
-
-        }
-
-        render();
-
-    });
-
-    gui.add(params, 'planeConstant', - 1, 1).step(0.01).name('plane constant').onChange(function (value) {
-
-        for (let j = 0; j < clipPlanes.length; j++) {
-
-            clipPlanes[j].constant = value;
-
-        }
-
-        render();
-
-    });
-
     gui.add(params, 'showHelpers').name('show helpers').onChange(function (value) {
-
         helpers.visible = value;
-
         render();
-
     });
 
-    //
+    // gui.add(params, 'planeConstant', - 1, 1).step(0.01).name('plane constant').onChange(function (value) {
+    //     for (let j = 0; j < clipPlanes.length; j++) {
+    //         clipPlanes[j].constant = value;
+    //     }
+    //     render();
+    // });
+}
+
+function init() {
+    init_control();
+    init_gui();
+
+
 
     window.addEventListener('resize', onWindowResize);
-
 }
 
 function onWindowResize() {
