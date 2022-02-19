@@ -130,9 +130,25 @@ function onWindowResize() {
 
 }
 
+var updateTree = 5;
+
 function update() {
+    if (updateTree == 0) {
+        tree.rebuild(points);
+        updateTree = 20;
+    }
+    updateTree--;
 
+    for (const point of points) {
+        const x = point.position.x - 0.025 + Math.random() * 0.05;
+        const y = point.position.y - 0.025 + Math.random() * 0.05;
+        const z = point.position.z - 0.025 + Math.random() * 0.05;
+        point.position.set(x, y, z);
+        if (!tree.contains(point)) {
+            point.position.set(0, 0, 0);
 
+        }
+    }
 
     render();
     requestAnimationFrame(update);

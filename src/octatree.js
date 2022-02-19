@@ -11,6 +11,10 @@ export class OctaTree {
         );
     }
 
+    contains(point) {
+        return this.root.region.contains(point);
+    }
+
     insert(point) {
         const res = this.root.insert(point);
         if (res === false) {
