@@ -30,7 +30,7 @@ class OctaTree {
     }
 
     _addSubPartitions(partitions) {
-        for (const partition in partitions) {
+        for (const partition of partitions) {
             this._addSubRegion(partition.region);
         }
     }
@@ -126,7 +126,7 @@ class OctaTreeSegment {
             (w, 0, d)
         ];
 
-        for (const [ws, hs, ds] in shifts) {
+        for (const [ws, hs, ds] of shifts) {
             const partitionCube = new Cuboid(x + ws, y + hs, z + ds);
             this.subTrees.push(new OctaTreeSegment(partitionCube, this.nMaxPoints, this.nMaxLevels - 1));
         }
