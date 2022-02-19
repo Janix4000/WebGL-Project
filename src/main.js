@@ -86,8 +86,8 @@ function init() {
 
     for (let i = 0; i < 1150; ++i) {
         const radius = Math.random() * 1;
-        const alpha = Math.random() * Math.PI * 2;
-        const theta = Math.random() * Math.PI * 2;
+        const alpha = Math.random() * Math.PI * 0.5;
+        const theta = Math.random() * Math.PI * 1 + Math.PI;
         const x = Math.cos(theta) * Math.sin(alpha) * radius;
         const y = Math.sin(theta) * Math.sin(alpha) * radius;
         const z = Math.cos(alpha) * radius;
@@ -105,7 +105,7 @@ function init() {
     }
 
     tree = new OctaTree(
-        new Cuboid(-1, -1, -1, 2, 2, 2),
+        new Cuboid(-2, -2, -2, 4, 4, 4),
         20, 5
     );
 

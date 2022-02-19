@@ -39,7 +39,6 @@ export class OctaTree {
 
     _addSubRegion(region) {
         const geometry = new THREE.BoxGeometry(region.w, region.h, region.d);
-        // geometry.translate( 0.5, 0.5, 0.5 );
 
         const material = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 });
         const cuboid = new THREE.Mesh(geometry, material);
