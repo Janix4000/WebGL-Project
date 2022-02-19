@@ -25,10 +25,24 @@ export class Boid {
         return avgVelocity;
     }
 
+    cohesion(neighbors) {
+        const avgPosition = new THREE.Vector3(0, 0, 0);
+        for (const other of neighbors) {
+            avgPosition.add(other.position);
+        }
+        if (neighbors.length > 0) {
+            avgPosition.divideScalar(neighbors.length);
+        }
+        return avgPosition.sub(this.position);
+    }
+
     flock(neighbors) {
         const alignment = this.align(neighbors);
+        const coh = this.cohesion(neighbors);
 
-        this.acc.add(alignment.clone().sub(this.vel));
+        const desired = alignment.clone().add(coh).divideScalar(2);
+
+        this.acc.add(desired.clone().sub(this.vel));
     }
 
     update(dt) {
