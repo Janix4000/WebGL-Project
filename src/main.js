@@ -9,6 +9,7 @@ import { GUI } from 'https://cdn.skypack.dev/lil-gui';
 
 let camera, scene, renderer;
 
+let points = [];
 
 const params = {
     clipIntersection: true,
@@ -75,6 +76,26 @@ function init_gui() {
 function init() {
     init_control();
     init_gui();
+
+
+    for (let i = 0; i < 1150; ++i) {
+        const radius = Math.random() * 1;
+        const alpha = Math.random() * Math.PI * 2;
+        const theta = Math.random() * Math.PI * 2;
+        const x = Math.cos(theta) * Math.sin(alpha) * radius;
+        const y = Math.sin(theta) * Math.sin(alpha) * radius;
+        const z = Math.cos(alpha) * radius;
+        const point = new THREE.Vector3(x, y, z);
+        points.push(point);
+
+        const geometry = new THREE.SphereGeometry(0.01, 32, 24);
+        const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(x, y, z);
+
+        scene.add(sphere);
+
+    }
 
 
 

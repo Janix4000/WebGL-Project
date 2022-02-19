@@ -2,6 +2,11 @@ class OctaTree {
     constructor(region, nMaxPoints, nMaxLevels) {
         this.root = OctaTreeSegment(region, nMaxPoints, nMaxLevels);
         this.helperBorder = new THREE.Group();
+        this.helperBorder.position.set(
+            region.x,
+            region.y,
+            region.z
+        );
     }
 
     insert(point) {
