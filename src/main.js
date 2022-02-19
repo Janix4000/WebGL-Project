@@ -15,6 +15,8 @@ let camera, scene, renderer;
 
 let points = [];
 
+var tree;
+
 const params = {
     clipIntersection: true,
     planeConstant: 0,
@@ -97,11 +99,12 @@ function init() {
         const sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(x, y, z);
 
+
         scene.add(sphere);
 
     }
 
-    const tree = new OctaTree(
+    tree = new OctaTree(
         new Cuboid(-1, -1, -1, 2, 2, 2),
         20, 5
     );
@@ -112,6 +115,7 @@ function init() {
 
     scene.add(tree.helperBorder);
 
+    console.log(tree);
 
     window.addEventListener('resize', onWindowResize);
 }

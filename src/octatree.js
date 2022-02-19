@@ -1,6 +1,8 @@
-class OctaTree {
+import { Cuboid } from './simple_3d_geometry.js'
+
+export class OctaTree {
     constructor(region, nMaxPoints, nMaxLevels) {
-        this.root = OctaTreeSegment(region, nMaxPoints, nMaxLevels);
+        this.root = new OctaTreeSegment(region, nMaxPoints, nMaxLevels);
         this.helperBorder = new THREE.Group();
         this.helperBorder.position.set(
             region.x,
@@ -43,7 +45,7 @@ class OctaTree {
         cuboid.position.set(region.x, region.y, region.z);
 
         const geo = new THREE.EdgesGeometry(geometry);
-        const mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 4 });
+        const mat = new THREE.LineBasicMaterial({ color: 0xff00ff, linewidth: 4 });
         const wireFrame = new THREE.LineSegments(geo, mat);
         wireFrame.renderOrder = 1;
         cuboid.add(wireFrame);
@@ -115,19 +117,19 @@ class OctaTreeSegment {
         const d = this.region.d / 2;
 
         const shifts = [
-            (0, 0, 0),
-            (0, h, 0),
-            (0, h, d),
-            (0, 0, d),
+            [0, 0, 0],
+            [0, h, 0],
+            [0, h, d],
+            [0, 0, d],
 
-            (w, 0, 0),
-            (w, h, 0),
-            (w, h, d),
-            (w, 0, d)
+            [w, 0, 0],
+            [w, h, 0],
+            [w, h, d],
+            [w, 0, d]
         ];
 
         for (const [ws, hs, ds] of shifts) {
-            const partitionCube = new Cuboid(x + ws, y + hs, z + ds);
+            const partitionCube = new Cuboid(x + ws, y + hs, z + ds, w, h, d);
             this.subTrees.push(new OctaTreeSegment(partitionCube, this.nMaxPoints, this.nMaxLevels - 1));
         }
     }
