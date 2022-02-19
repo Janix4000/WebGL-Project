@@ -5,9 +5,9 @@ export class OctaTree {
         this.root = new OctaTreeSegment(region, nMaxPoints, nMaxLevels);
         this.helperBorder = new THREE.Group();
         this.helperBorder.position.set(
-            region.x,
-            region.y,
-            region.z
+            region.x + region.w / 2,
+            region.y + region.h / 2,
+            region.z + region.d / 2
         );
     }
 
@@ -39,10 +39,11 @@ export class OctaTree {
 
     _addSubRegion(region) {
         const geometry = new THREE.BoxGeometry(region.w, region.h, region.d);
+        // geometry.translate( 0.5, 0.5, 0.5 );
+
         const material = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 });
         const cuboid = new THREE.Mesh(geometry, material);
-
-        cuboid.position.set(region.x, region.y, region.z);
+        cuboid.position.set(region.x + region.w / 2, region.y + region.h / 2, region.z + region.d / 2);
 
         const geo = new THREE.EdgesGeometry(geometry);
         const mat = new THREE.LineBasicMaterial({ color: 0xff00ff, linewidth: 4 });
