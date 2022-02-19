@@ -27,6 +27,13 @@ export class OctaTree {
         this.helperBorder.clear();
     }
 
+    rebuild(points) {
+        this.clear();
+        for (const point of points) {
+            this.insert(point);
+        }
+    }
+
     query(range, points) {
         return this.root.query(range, points);
     }
