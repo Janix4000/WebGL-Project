@@ -116,6 +116,7 @@ function init() {
     console.log(tree);
 
     window.addEventListener('resize', onWindowResize);
+    update();
 }
 
 function onWindowResize() {
@@ -129,8 +130,15 @@ function onWindowResize() {
 
 }
 
+function update() {
+
+
+
+    render();
+    requestAnimationFrame(update);
+}
+
 function render() {
 
     renderer.render(scene, camera);
-
 }
