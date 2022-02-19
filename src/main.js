@@ -9,7 +9,7 @@ import { GUI } from 'https://cdn.skypack.dev/lil-gui';
 
 import { OctaTree } from './octatree.js'
 import { Sphere, Cuboid } from './simple_3d_geometry.js'
-
+import { Boid } from './boid.js'
 
 let camera, scene, renderer;
 
@@ -92,14 +92,14 @@ function init() {
         const x = Math.cos(theta) * Math.sin(alpha) * radius;
         const y = Math.sin(theta) * Math.sin(alpha) * radius;
         const z = Math.cos(alpha) * radius;
-        const point = new THREE.Vector3(x, y, z);
 
         const geometry = new THREE.SphereGeometry(0.01, 32, 24);
         const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
         const sphere = new THREE.Mesh(geometry, material);
-
         sphere.position.set(x, y, z);
-        points.push(sphere);
+
+        scene.add(sphere);
+        points.push(new Boid(sphere));
     }
     tree = new OctaTree(
         new Cuboid(-2, -2, -2, 4, 4, 4),
@@ -107,7 +107,6 @@ function init() {
     );
     scene.add(tree.helperBorder);
     for (const point of points) {
-        scene.add(point);
         tree.insert(point);
     }
 
@@ -154,7 +153,7 @@ function update() {
         const y = point.position.y - speed / 2 + Math.random() * speed;
         const z = point.position.z - speed / 2 + Math.random() * speed;
         point.position.set(x, y, z);
-        point.material.color.setHex(0x00ff00);
+        point.model.material.color.setHex(0x00ff00);
         if (!tree.contains(point)) {
             point.position.set(0, 0, 0);
 
@@ -163,7 +162,7 @@ function update() {
 
     const foundPoints = tree.query(findRegion);
     for (const point of foundPoints) {
-        point.material.color.setHex(0xffff00);
+        point.model.material.color.setHex(0xffff00);
     }
 
     render();
