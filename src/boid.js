@@ -6,13 +6,13 @@ export class Boid {
     constructor(model) {
         this.position = model.position;
         this.model = model;
-        const maxSpeed = 0.2;
+        const maxSpeed = 1;
         this.vel = new THREE.Vector3(this.random(-maxSpeed, maxSpeed), this.random(-maxSpeed, maxSpeed), this.random(-maxSpeed, maxSpeed));
         this.acc = new THREE.Vector3(0, 0, 0);
     }
 
     align(neighbors) {
-        const avgVelocity = new THREE.Vector(0, 0, 0);
+        const avgVelocity = new THREE.Vector3(0, 0, 0);
         for (const other of neighbors) {
             if (other === this) {
                 continue;
@@ -27,7 +27,8 @@ export class Boid {
 
     flock(neighbors) {
         const alignment = this.align(neighbors);
-        this.acc = alignment;
+
+        this.acc.add(alignment.clone().sub(this.vel));
     }
 
     update(dt) {

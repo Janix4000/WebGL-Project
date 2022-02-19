@@ -33,10 +33,17 @@ class Cuboid {
 
 class Sphere {
     constructor(x, y, z, r) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.r = r;
+        if (z === undefined) {
+            this.x = x.x;
+            this.y = x.y;
+            this.z = x.z;
+            this.r = y;
+        } else {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.r = r;
+        }
     }
 
     contains(point) {

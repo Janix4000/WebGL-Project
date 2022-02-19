@@ -156,6 +156,7 @@ function update() {
         if (!tree.contains(point)) {
             point.position.set(0, 0, 0);
         }
+
         const distanceFromOriginSq = point.position.distanceToSquared(origin);
         if (distanceFromOriginSq > maxDistanceFromOrigin * maxDistanceFromOrigin) {
             const correction = origin.clone().sub(point.position);
@@ -163,6 +164,9 @@ function update() {
             correction.multiplyScalar(0.01);
             point.vel.add(correction);
         }
+
+        const neighbors = tree.query(new Sphere(point.position, perceptionRadius));
+        point.flock(neighbors);
 
         point.update(1.0 / 60.0);
     }
