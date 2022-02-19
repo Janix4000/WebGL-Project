@@ -1,11 +1,3 @@
-class Point {
-    constructor(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-}
-
 class Cuboid {
     constructor(x, y, z, w, h, d) {
         this.x = x;
@@ -18,12 +10,12 @@ class Cuboid {
 
     contains(point) {
         return (
-            (point.x <= this.x + this.w) &&
-            (point.x >= this.x) &&
-            (point.y <= this.y + this.h) &&
-            (point.y >= this.y) &&
-            (point.z <= this.z + this.d) &&
-            (point.z >= this.z)
+            (point.position.x <= this.x + this.w) &&
+            (point.position.x >= this.x) &&
+            (point.position.y <= this.y + this.h) &&
+            (point.position.y >= this.y) &&
+            (point.position.z <= this.z + this.d) &&
+            (point.position.z >= this.z)
         );
     }
 
@@ -48,9 +40,9 @@ class Sphere {
     }
 
     contains(point) {
-        const dx = this.x - point.x;
-        const dy = this.y - point.y;
-        const dz = this.z - point.z;
+        const dx = this.x - point.position.x;
+        const dy = this.y - point.position.y;
+        const dz = this.z - point.position.z;
         return (dx * dx + dy * dy + dz * dz) < (this.r * this.r);
     }
 
@@ -76,4 +68,4 @@ class Sphere {
     }
 }
 
-export { Point, Cuboid, Sphere };
+export { Cuboid, Sphere };

@@ -8,7 +8,7 @@ import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.2/examples/js
 import { GUI } from 'https://cdn.skypack.dev/lil-gui';
 
 import { OctaTree } from './octatree.js'
-import { Sphere, Cuboid, Point } from './simple_3d_geometry.js'
+import { Sphere, Cuboid } from './simple_3d_geometry.js'
 
 
 let camera, scene, renderer;
@@ -92,16 +92,13 @@ function init() {
         const y = Math.sin(theta) * Math.sin(alpha) * radius;
         const z = Math.cos(alpha) * radius;
         const point = new THREE.Vector3(x, y, z);
-        points.push(point);
 
         const geometry = new THREE.SphereGeometry(0.01, 32, 24);
         const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
         const sphere = new THREE.Mesh(geometry, material);
+
         sphere.position.set(x, y, z);
-
-
-        scene.add(sphere);
-
+        points.push(sphere);
     }
 
     tree = new OctaTree(
@@ -110,6 +107,7 @@ function init() {
     );
 
     for (const point of points) {
+        scene.add(point);
         tree.insert(point);
     }
 
