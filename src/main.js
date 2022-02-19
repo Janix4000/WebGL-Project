@@ -7,6 +7,10 @@
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js";
 import { GUI } from 'https://cdn.skypack.dev/lil-gui';
 
+import { OctaTree } from './octatree.js'
+import { Sphere, Cuboid, Point } from './simple_3d_geometry.js'
+
+
 let camera, scene, renderer;
 
 let points = [];
@@ -97,6 +101,16 @@ function init() {
 
     }
 
+    const tree = new OctaTree(
+        new Cuboid(-1, -1, -1, 2, 2, 2),
+        20, 5
+    );
+
+    for (const point of points) {
+        tree.insert(point);
+    }
+
+    scene.add(tree.helperBorder);
 
 
     window.addEventListener('resize', onWindowResize);

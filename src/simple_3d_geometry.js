@@ -75,3 +75,5 @@ class Sphere {
         return (dx * dx + dy * dy + dz * dz) < (this.r * this.r);
     }
 }
+
+export { Point, Cuboid, Sphere };
