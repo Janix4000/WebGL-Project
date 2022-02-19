@@ -1,5 +1,55 @@
 class OctaTree {
     constructor(region, nMaxPoints, nMaxLevels) {
+        this.root = OctaTreeSegment(region, nMaxPoints, nMaxLevels);
+        this.helperBorder = new THREE.Group();
+    }
+
+    insert(point) {
+        const res = this.root.insert(point);
+        if (res === false) {
+            return false;
+        }
+        if (res !== null) {
+            this._addSubPartitions(res);
+        }
+        return true;
+    }
+
+    clear() {
+        this.root.clear();
+        this.helperBorder.clear();
+    }
+
+    query(range, points) {
+        return this.root.query(range, points);
+    }
+
+    _addSubPartitions(partitions) {
+        for (const partition in partitions) {
+            this._addSubRegion(partition.region);
+        }
+    }
+
+    _addSubRegion(region) {
+        const geometry = new THREE.BoxGeometry(region.w, region.h, region.d);
+        const material = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 });
+        const cuboid = new THREE.Mesh(geometry, material);
+
+        cuboid.position.set(region.x, region.y, region.z);
+
+        const geo = new THREE.EdgesGeometry(geometry);
+        const mat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 4 });
+        const wireFrame = new THREE.LineSegments(geo, mat);
+        wireFrame.renderOrder = 1;
+        cuboid.add(wireFrame);
+
+        this.helperBorder.add(cuboid);
+    }
+}
+
+
+class OctaTreeSegment {
+    constructor(region, nMaxPoints, nMaxLevels) {
         this.region = region;
         if (nMaxPoints) {
             this.nMaxPoints = nMaxPoints;
@@ -24,16 +74,17 @@ class OctaTree {
             return false;
         }
 
+        let res = null;
         if (this.splitted) {
-            this._insertToSubTrees(point);
+            res = this._insertToSubTrees(point);
         } else {
             this.points.push(point);
             if (this.points.length > this.nMaxPoints && this._canBeSplitted()) {
-                this._split();
+                res = this._split();
             }
         }
         this.size++;
-        return true;
+        return res;
     }
 
     _canBeSplitted() {
@@ -42,8 +93,9 @@ class OctaTree {
 
     _insertToSubTrees(point) {
         for (const subTree of this.subTrees) {
-            if (subTree.insert(point)) {
-                return true;
+            const res = subTree.insert(point);
+            if (res !== false) {
+                return res;
             }
         }
         return false;
@@ -71,7 +123,7 @@ class OctaTree {
 
         for (const [ws, hs, ds] in shifts) {
             const partitionCube = new Cuboid(x + ws, y + hs, z + ds);
-            this.subTrees.push(new OctaTree(partitionCube, this.nMaxPoints, this.nMaxLevels - 1));
+            this.subTrees.push(new OctaTreeSegment(partitionCube, this.nMaxPoints, this.nMaxLevels - 1));
         }
     }
 
@@ -84,6 +136,7 @@ class OctaTree {
         }
 
         this.splitted = true;
+        return this.subTrees;
     }
 
     clear() {
