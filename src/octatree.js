@@ -38,8 +38,10 @@ export class OctaTree {
         }
     }
 
-    query(range, points) {
-        return this.root.query(range, points);
+    query(range) {
+        let points = [];
+        this.root.query(range, points);
+        return points;
     }
 
     _addSubPartitions(partitions) {
@@ -169,7 +171,7 @@ class OctaTreeSegment {
         if (!points) {
             points = [];
         }
-        if (range.intersectRect(this.region)) {
+        if (range.intersectCuboid(this.region)) {
             if (this.splitted) {
                 for (const subTree of this.subTrees) {
                     subTree.query(range, points);

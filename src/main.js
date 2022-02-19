@@ -15,7 +15,8 @@ let camera, scene, renderer;
 
 let points = [];
 
-var tree;
+let tree;
+let findRegion;
 
 const params = {
     clipIntersection: true,
@@ -100,20 +101,27 @@ function init() {
         sphere.position.set(x, y, z);
         points.push(sphere);
     }
-
     tree = new OctaTree(
         new Cuboid(-2, -2, -2, 4, 4, 4),
         20, 5
     );
-
+    scene.add(tree.helperBorder);
     for (const point of points) {
         scene.add(point);
         tree.insert(point);
     }
 
-    scene.add(tree.helperBorder);
+    findRegion = new Sphere(0, 0, 0, 0.6);
+    {
+        const geometry = new THREE.SphereGeometry(findRegion.r, 32, 24);
+        const material = new THREE.MeshLambertMaterial({ color: 0x0000ff, transparent: true, opacity: 0.3 });
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(findRegion.x, findRegion.y, findRegion.z);
+        scene.add(sphere);
+    }
 
-    console.log(tree);
+
+    // console.log(tree);
 
     window.addEventListener('resize', onWindowResize);
     update();
@@ -139,15 +147,23 @@ function update() {
     }
     updateTree--;
 
+    const speed = 0.005;
+
     for (const point of points) {
-        const x = point.position.x - 0.025 + Math.random() * 0.05;
-        const y = point.position.y - 0.025 + Math.random() * 0.05;
-        const z = point.position.z - 0.025 + Math.random() * 0.05;
+        const x = point.position.x - speed / 2 + Math.random() * speed;
+        const y = point.position.y - speed / 2 + Math.random() * speed;
+        const z = point.position.z - speed / 2 + Math.random() * speed;
         point.position.set(x, y, z);
+        point.material.color.setHex(0x00ff00);
         if (!tree.contains(point)) {
             point.position.set(0, 0, 0);
 
         }
+    }
+
+    const foundPoints = tree.query(findRegion);
+    for (const point of foundPoints) {
+        point.material.color.setHex(0xffff00);
     }
 
     render();

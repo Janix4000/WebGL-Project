@@ -53,17 +53,19 @@ class Sphere {
         const sumR = this.r + other.r;
         return (dx * dx + dy * dy + dz * dz) < (sumR * sumR);
     }
-    intersectRect(cuboid) {
+    intersectCuboid(cuboid) {
         if (cuboid.contains({
-            x: this.x,
-            y: this.y,
-            z: this.z
+            position: {
+                x: this.x,
+                y: this.y,
+                z: this.z
+            }
         })) {
             return true;
         }
-        const dx = this.x - max(cuboid.x, min(this.x, cuboid.x + cuboid.w));
-        const dy = this.y - max(cuboid.y, min(this.y, cuboid.y + cuboid.h));
-        const dz = this.z - max(cuboid.z, min(this.z, cuboid.z + cuboid.d));
+        const dx = this.x - Math.max(cuboid.x, Math.min(this.x, cuboid.x + cuboid.w));
+        const dy = this.y - Math.max(cuboid.y, Math.min(this.y, cuboid.y + cuboid.h));
+        const dz = this.z - Math.max(cuboid.z, Math.min(this.z, cuboid.z + cuboid.d));
         return (dx * dx + dy * dy + dz * dz) < (this.r * this.r);
     }
 }
