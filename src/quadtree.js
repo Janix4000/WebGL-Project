@@ -1,16 +1,19 @@
 class Point {
-    constructor(x, y) {
+    constructor(x, y, z) {
         this.x = x;
         this.y = y;
+        this.z = z;
     }
 }
 
-class Rectangle {
-    constructor(x, y, w, h) {
+class Cuboid {
+    constructor(x, y, z, w, h, d) {
         this.x = x;
         this.y = y;
+        this.z = z;
         this.w = w;
         this.h = h;
+        this.d = d;
     }
 
     contains(point) {
@@ -18,53 +21,62 @@ class Rectangle {
             (point.x <= this.x + this.w) &&
             (point.x >= this.x) &&
             (point.y <= this.y + this.h) &&
-            (point.y >= this.y)
+            (point.y >= this.y) &&
+            (point.z <= this.z + this.d) &&
+            (point.z >= this.z)
         );
     }
 
-    intersectRect(other) {
+    intersectCuboid(other) {
         return !(
             this.x > other.x + other.w ||
             this.x + this.w < other.x ||
             this.y > other.y + other.h ||
-            this.y + this.h < other.y
+            this.y + this.h < other.y ||
+            this.z > other.z + other.d ||
+            this.z + this.h < other.z
         );
     }
 }
 
-class Circle {
-    constructor(x, y, r) {
+class Sphere {
+    constructor(x, y, z, r) {
         this.x = x;
         this.y = y;
+        this.z = z;
         this.r = r;
     }
 
     contains(point) {
         const dx = this.x - point.x;
         const dy = this.y - point.y;
-        return (dx * dx + dy * dy) < (this.r * this.r);
+        const dz = this.z - point.z;
+        return (dx * dx + dy * dy + dz * dz) < (this.r * this.r);
     }
 
     intersectCircle(other) {
         const dx = this.x - other.x;
         const dy = this.y - other.y;
+        const dz = this.z - other.z;
         const sumR = this.r + other.r;
-        return (dx * dx + dy * dy) < (sumR * sumR);
+        return (dx * dx + dy * dy + dz * dz) < (sumR * sumR);
     }
-    intersectRect(rect) {
-        if (rect.contains({
+    intersectRect(cuboid) {
+        if (cuboid.contains({
             x: this.x,
-            y: this.y
+            y: this.y,
+            z: this.z
         })) {
             return true;
         }
-        const dx = this.x - max(rect.x, min(this.x, rect.x + rect.w));
-        const dy = this.y - max(rect.y, min(this.y, rect.y + rect.h));
-        return (dx * dx + dy * dy) < (this.r * this.r);
+        const dx = this.x - max(cuboid.x, min(this.x, cuboid.x + cuboid.w));
+        const dy = this.y - max(cuboid.y, min(this.y, cuboid.y + cuboid.h));
+        const dz = this.z - max(cuboid.z, min(this.z, cuboid.z + cuboid.d));
+        return (dx * dx + dy * dy + dz * dz) < (this.r * this.r);
     }
 }
 
-class QuadTree {
+class OctaTree {
     constructor(region, nMaxPoints, nMaxLevels) {
         this.region = region;
         if (nMaxPoints) {
@@ -81,7 +93,7 @@ class QuadTree {
         this.points = [];
         this.subTrees = [];
 
-        this.splited = false;
+        this.splitted = false;
         this.size = 0;
     }
 
@@ -90,11 +102,11 @@ class QuadTree {
             return false;
         }
 
-        if (this.splited) {
+        if (this.splitted) {
             this._insertToSubTrees(point);
         } else {
             this.points.push(point);
-            if (this.points.length > this.nMaxPoints && this._canBeSplited()) {
+            if (this.points.length > this.nMaxPoints && this._canBeSplitted()) {
                 this._split();
             }
         }
@@ -102,7 +114,7 @@ class QuadTree {
         return true;
     }
 
-    _canBeSplited() {
+    _canBeSplitted() {
         return this.nMaxLevels > 0;
     }
 
@@ -118,18 +130,27 @@ class QuadTree {
     _createSubTrees() {
         const x = this.region.x;
         const y = this.region.y;
+        const z = this.region.z;
         const w = this.region.w / 2;
         const h = this.region.h / 2;
+        const d = this.region.d / 2;
 
-        let nw = new Rectangle(x, y, w, h);
-        let ne = new Rectangle(x + w, y, w, h);
-        let sw = new Rectangle(x, y + h, w, h);
-        let se = new Rectangle(x + w, y + h, w, h);
+        const shifts = [
+            (0, 0, 0),
+            (0, h, 0),
+            (0, h, d),
+            (0, 0, d),
 
-        this.subTrees.push(new QuadTree(nw, this.nMaxPoints, this.nMaxLevels - 1));
-        this.subTrees.push(new QuadTree(ne, this.nMaxPoints, this.nMaxLevels - 1));
-        this.subTrees.push(new QuadTree(sw, this.nMaxPoints, this.nMaxLevels - 1));
-        this.subTrees.push(new QuadTree(se, this.nMaxPoints, this.nMaxLevels - 1));
+            (w, 0, 0),
+            (w, h, 0),
+            (w, h, d),
+            (w, 0, d)
+        ];
+
+        for (const [ws, hs, ds] in shifts) {
+            const partitionCube = new Cuboid(x + ws, y + hs, z + ds);
+            this.subTrees.push(new OctaTree(partitionCube, this.nMaxPoints, this.nMaxLevels - 1));
+        }
     }
 
     _split() {
@@ -140,25 +161,25 @@ class QuadTree {
             this._insertToSubTrees(point);
         }
 
-        this.splited = true;
+        this.splitted = true;
     }
 
     clear() {
         this.points = [];
         this.subTrees = [];
 
-        this.splited = false;
+        this.splitted = false;
         this.size = 0;
     }
 
-    queery(range, points) {
+    query(range, points) {
         if (!points) {
             points = [];
         }
         if (range.intersectRect(this.region)) {
-            if (this.splited) {
+            if (this.splitted) {
                 for (const subTree of this.subTrees) {
-                    subTree.queery(range, points);
+                    subTree.query(range, points);
                 }
             } else {
                 for (const point of this.points) {
