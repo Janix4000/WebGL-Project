@@ -6,7 +6,7 @@ export class Boid {
     constructor(model) {
         this.position = model.position;
         this.model = model;
-        const maxSpeed = 4;
+        const maxSpeed = 0.2;
         this.vel = new THREE.Vector3(this.random(-maxSpeed, maxSpeed), this.random(-maxSpeed, maxSpeed), this.random(-maxSpeed, maxSpeed));
         this.acc = new THREE.Vector3(0, 0, 0);
     }

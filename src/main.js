@@ -58,17 +58,15 @@ function init_control() {
 }
 
 function init_gui() {
-    const helpers = new THREE.Group();
-    helpers.add(new THREE.PlaneHelper(clipPlanes[0], 2, 0xff0000));
-    helpers.add(new THREE.PlaneHelper(clipPlanes[1], 2, 0x00ff00));
-    helpers.add(new THREE.PlaneHelper(clipPlanes[2], 2, 0x0000ff));
-    helpers.visible = true;
-    scene.add(helpers);
-
     const gui = new GUI();
 
+    tree = new OctaTree(
+        new Cuboid(-2, -2, -2, 4, 4, 4),
+        20, 5
+    );
+
     gui.add(params, 'showHelpers').name('show helpers').onChange(function (value) {
-        helpers.visible = value;
+        tree.helperBorder.visible = value;
         render();
     });
 
@@ -101,10 +99,7 @@ function init() {
         scene.add(sphere);
         points.push(new Boid(sphere));
     }
-    tree = new OctaTree(
-        new Cuboid(-2, -2, -2, 4, 4, 4),
-        20, 5
-    );
+
     scene.add(tree.helperBorder);
     for (const point of points) {
         tree.insert(point);
@@ -138,6 +133,7 @@ function onWindowResize() {
 }
 
 var updateTree = 5;
+var perceptionRadius = 0.3;
 
 function update() {
     if (updateTree == 0) {
@@ -146,18 +142,29 @@ function update() {
     }
     updateTree--;
 
-    const speed = 0.005;
+    // const speed = 0.005;
+    const origin = new THREE.Vector3(0, 0, 0);
+    const maxDistanceFromOrigin = 1.5;
 
     for (const point of points) {
-        const x = point.position.x - speed / 2 + Math.random() * speed;
-        const y = point.position.y - speed / 2 + Math.random() * speed;
-        const z = point.position.z - speed / 2 + Math.random() * speed;
-        point.position.set(x, y, z);
+        // const x = point.position.x - speed / 2 + Math.random() * speed;
+        // const y = point.position.y - speed / 2 + Math.random() * speed;
+        // const z = point.position.z - speed / 2 + Math.random() * speed;
+        // point.position.set(x, y, z);
+
         point.model.material.color.setHex(0x00ff00);
         if (!tree.contains(point)) {
             point.position.set(0, 0, 0);
-
         }
+        const distanceFromOriginSq = point.position.distanceToSquared(origin);
+        if (distanceFromOriginSq > maxDistanceFromOrigin * maxDistanceFromOrigin) {
+            const correction = origin.clone().sub(point.position);
+            correction.setLength(distanceFromOriginSq - maxDistanceFromOrigin * maxDistanceFromOrigin);
+            correction.multiplyScalar(0.01);
+            point.vel.add(correction);
+        }
+
+        point.update(1.0 / 60.0);
     }
 
     const foundPoints = tree.query(findRegion);
