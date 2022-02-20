@@ -65,5 +65,9 @@ export class Boid {
         this.vel.add(this.acc.clone().multiplyScalar(dt));
         this.position.add(this.vel.clone().setLength(this.speed).multiplyScalar(dt));
         this.acc.multiplyScalar(0);
+
+        const lookingDirection = this.position.clone().add(this.vel.clone().setLength(this.speed));
+        this.model.lookAt(lookingDirection);
+        this.model.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2);
     }
 }

@@ -12,6 +12,7 @@ import { Sphere, Cuboid } from './simple_3d_geometry.js'
 import { Boid } from './boid.js'
 
 let camera, scene, renderer;
+let shouldUpdateTree = 5;
 
 let points = [];
 const treeWidth = 6;
@@ -63,8 +64,6 @@ function init_control() {
 function init_gui() {
     const gui = new GUI();
 
-
-
     gui.add(params, 'showHelpers').name('show octa tree').onChange(function (value) {
         tree.helperBorder.visible = value;
     });
@@ -82,10 +81,7 @@ function init_gui() {
     });
 }
 
-function init() {
-    init_control();
-    init_gui();
-
+function initTree() {
     tree = new OctaTree(
         new Cuboid(-treeWidth / 2, -treeWidth / 2, -treeWidth / 2, treeWidth, treeWidth, treeWidth),
         16, 6
@@ -93,12 +89,16 @@ function init() {
 
     tree.helperBorder.visible = false;
 
+    shouldUpdateTree = 5;
+}
+
+function initBoids() {
     for (let i = 0; i < 3150; ++i) {
         const x = Math.random() * treeWidth - treeWidth / 2;
         const y = Math.random() * treeWidth - treeWidth / 2;
         const z = Math.random() * treeWidth - treeWidth / 2;
 
-        const geometry = new THREE.SphereGeometry(0.01, 32, 24);
+        const geometry = new THREE.ConeGeometry(0.01, 0.09, 10);//new THREE.SphereGeometry(0.01, 32, 24);
         const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
         const sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(x, y, z);
@@ -111,18 +111,23 @@ function init() {
     for (const point of points) {
         tree.insert(point);
     }
+}
 
+function initRegion() {
     findRegion = new Sphere(0, 0, 0, 0.6);
-    {
-        const geometry = new THREE.SphereGeometry(findRegion.r, 32, 24);
-        const material = new THREE.MeshLambertMaterial({ color: 0x0000ff, transparent: true, opacity: 0.3 });
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(findRegion.x, findRegion.y, findRegion.z);
-        scene.add(sphere);
-    }
+    const geometry = new THREE.SphereGeometry(findRegion.r, 32, 24);
+    const material = new THREE.MeshLambertMaterial({ color: 0x0000ff, transparent: true, opacity: 0.3 });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(findRegion.x, findRegion.y, findRegion.z);
+    scene.add(sphere);
+}
 
-
-    // console.log(tree);
+function init() {
+    init_control();
+    init_gui();
+    initTree()
+    initBoids();
+    initRegion();
 
     window.addEventListener('resize', onWindowResize);
     update();
@@ -139,7 +144,7 @@ function onWindowResize() {
 
 }
 
-var shouldUpdateTree = 5;
+
 
 function updateTree(dt) {
     if (shouldUpdateTree == 0) {
