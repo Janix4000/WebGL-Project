@@ -11,7 +11,7 @@ export class Boid {
         this.acc = new THREE.Vector3(0, 0, 0);
     }
 
-    align(neighbors) {
+    getAlignment(neighbors) {
         const avgVelocity = new THREE.Vector3(0, 0, 0);
         for (const other of neighbors) {
             if (other === this) {
@@ -25,7 +25,7 @@ export class Boid {
         return avgVelocity;
     }
 
-    cohesion(neighbors) {
+    getCohesion(neighbors) {
         const avgPosition = new THREE.Vector3(0, 0, 0);
         for (const other of neighbors) {
             avgPosition.add(other.position);
@@ -36,7 +36,7 @@ export class Boid {
         return avgPosition.sub(this.position);
     }
 
-    separation(neighbors) {
+    getSeparation(neighbors) {
         const avgDifference = new THREE.Vector3(0, 0, 0);
         for (const other of neighbors) {
             if (other === this) {
@@ -50,23 +50,18 @@ export class Boid {
         return avgDifference;
     }
 
-    flock(neighbors) {
-        const a = 3;
-        const c = 0.5;
-        const s = 1.6;
-
-
-        const alignment = this.align(neighbors).multiplyScalar(a);
-        const coh = this.cohesion(neighbors).multiplyScalar(c);
-        const sep = this.separation(neighbors).multiplyScalar(s);
+    flock(neighbors, alignmentFactor = 1, cohesionFactor = 1, separationFactor = 1) {
+        const alignment = this.getAlignment(neighbors).multiplyScalar(alignmentFactor);
+        const cohesion = this.getCohesion(neighbors).multiplyScalar(cohesionFactor);
+        const separation = this.getSeparation(neighbors).multiplyScalar(separationFactor);
 
         this.acc.add(alignment.clone().sub(this.vel));
-        this.acc.add(coh.clone().sub(this.vel));
-        this.acc.add(sep.clone().sub(this.vel));
+        this.acc.add(cohesion.clone().sub(this.vel));
+        this.acc.add(separation.clone().sub(this.vel));
     }
 
     update(dt) {
-        this.vel.add(this.acc.clone().multiplyScalar(dt)).setLength(0.4);
+        this.vel.add(this.acc.clone().multiplyScalar(dt)).setLength(0.8);
         this.position.add(this.vel.clone().multiplyScalar(dt));
         this.acc.multiplyScalar(0);
     }

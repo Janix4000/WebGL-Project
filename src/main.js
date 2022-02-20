@@ -20,9 +20,11 @@ let tree;
 let findRegion;
 
 const params = {
-    clipIntersection: true,
-    planeConstant: 0,
-    showHelpers: false
+    alignmentFactor: 1,
+    cohesionFactor: 1,
+    separationFactor: 1,
+
+    showHelpers: true
 };
 
 const clipPlanes = [
@@ -61,28 +63,26 @@ function init_control() {
 function init_gui() {
     const gui = new GUI();
 
-    tree = new OctaTree(
-        new Cuboid(-treeWidth / 2, -treeWidth / 2, -treeWidth / 2, treeWidth, treeWidth, treeWidth),
-        16, 6
-    );
 
-    gui.add(params, 'showHelpers').name('show helpers').onChange(function (value) {
+
+    gui.add(params, 'showHelpers').name('show octa tree').onChange(function (value) {
         tree.helperBorder.visible = value;
         render();
     });
 
-    // gui.add(params, 'planeConstant', - 1, 1).step(0.01).name('plane constant').onChange(function (value) {
-    //     for (let j = 0; j < clipPlanes.length; j++) {
-    //         clipPlanes[j].constant = value;
-    //     }
-    //     render();
-    // });
+    gui.add(params, 'alignmentFactor', 0, 5).step(0.05).name('alignment');
+    gui.add(params, 'cohesionFactor', 0, 5).step(0.05).name('cohesion');
+    gui.add(params, 'separationFactor', 0, 5).step(0.05).name('separation');
 }
 
 function init() {
     init_control();
     init_gui();
 
+    tree = new OctaTree(
+        new Cuboid(-treeWidth / 2, -treeWidth / 2, -treeWidth / 2, treeWidth, treeWidth, treeWidth),
+        16, 6
+    );
 
     for (let i = 0; i < 3150; ++i) {
         const x = Math.random() * treeWidth - treeWidth / 2;
@@ -171,7 +171,7 @@ function update() {
         // }
 
         const neighbors = tree.query(new Sphere(point.position, perceptionRadius));
-        point.flock(neighbors);
+        point.flock(neighbors, params.alignmentFactor, params.cohesionFactor, params.separationFactor);
 
         point.update(1.0 / 60.0);
     }
