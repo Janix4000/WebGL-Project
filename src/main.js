@@ -37,6 +37,23 @@ const params = {
 init();
 render();
 
+function initSkybox() {
+    const imageDir = "textures/galaxy";
+    const directions = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
+    const imageSuffix = ".png";
+    const skyGeometry = new THREE.BoxGeometry(90, 90, 90);
+
+    const materialArray = [];
+    for (let i = 0; i < 6; i++)
+        materialArray.push(new THREE.MeshBasicMaterial({
+            map: new THREE.TextureLoader().load(imageDir + "/galaxy" + directions[i] + imageSuffix),
+            side: THREE.BackSide
+        }));
+    const skyMaterial = new THREE.MeshFaceMaterial(materialArray);
+    const skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add(skyBox);
+}
+
 function init_control() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -128,6 +145,8 @@ function init() {
     initTree()
     initBoids();
     initRegion();
+
+    // initSkybox();
 
     window.addEventListener('resize', onWindowResize);
     update();
