@@ -14,6 +14,7 @@ import { Boid } from './boid.js'
 let camera, scene, renderer;
 
 let points = [];
+const treeWidth = 6;
 
 let tree;
 let findRegion;
@@ -49,7 +50,7 @@ function init_control() {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.addEventListener('change', render); // use only if there is no animation loop
     controls.minDistance = 1;
-    controls.maxDistance = 10;
+    controls.maxDistance = 15;
     controls.enablePan = false;
 
     const light = new THREE.HemisphereLight(0xffffff, 0x080808, 1.5);
@@ -61,8 +62,8 @@ function init_gui() {
     const gui = new GUI();
 
     tree = new OctaTree(
-        new Cuboid(-2, -2, -2, 4, 4, 4),
-        20, 5
+        new Cuboid(-treeWidth / 2, -treeWidth / 2, -treeWidth / 2, treeWidth, treeWidth, treeWidth),
+        16, 6
     );
 
     gui.add(params, 'showHelpers').name('show helpers').onChange(function (value) {
@@ -83,13 +84,10 @@ function init() {
     init_gui();
 
 
-    for (let i = 0; i < 1150; ++i) {
-        const radius = Math.random() * 1;
-        const alpha = Math.random() * Math.PI * 0.5;
-        const theta = Math.random() * Math.PI * 1 + Math.PI;
-        const x = Math.cos(theta) * Math.sin(alpha) * radius;
-        const y = Math.sin(theta) * Math.sin(alpha) * radius;
-        const z = Math.cos(alpha) * radius;
+    for (let i = 0; i < 3150; ++i) {
+        const x = Math.random() * treeWidth - treeWidth / 2;
+        const y = Math.random() * treeWidth - treeWidth / 2;
+        const z = Math.random() * treeWidth - treeWidth / 2;
 
         const geometry = new THREE.SphereGeometry(0.01, 32, 24);
         const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
@@ -133,7 +131,7 @@ function onWindowResize() {
 }
 
 var updateTree = 5;
-var perceptionRadius = 0.3;
+var perceptionRadius = 0.5;
 
 function update() {
     if (updateTree == 0) {
@@ -144,7 +142,7 @@ function update() {
 
     // const speed = 0.005;
     const origin = new THREE.Vector3(0, 0, 0);
-    const maxDistanceFromOrigin = 1.5;
+    const maxDistanceFromOrigin = 3;
 
     for (const point of points) {
         // const x = point.position.x - speed / 2 + Math.random() * speed;
@@ -154,16 +152,23 @@ function update() {
 
         point.model.material.color.setHex(0x00ff00);
         if (!tree.contains(point)) {
-            point.position.set(0, 0, 0);
+            let x = point.position.x;
+            let y = point.position.y;
+            let z = point.position.z;
+            const dim = treeWidth;
+            x -= Math.floor((x + dim / 2) / dim) * dim;
+            y -= Math.floor((y + dim / 2) / dim) * dim;
+            z -= Math.floor((z + dim / 2) / dim) * dim;
+            point.position.set(x, y, z);
         }
 
-        const distanceFromOriginSq = point.position.distanceToSquared(origin);
-        if (distanceFromOriginSq > maxDistanceFromOrigin * maxDistanceFromOrigin) {
-            const correction = origin.clone().sub(point.position);
-            correction.setLength(distanceFromOriginSq - maxDistanceFromOrigin * maxDistanceFromOrigin);
-            correction.multiplyScalar(0.01);
-            point.vel.add(correction);
-        }
+        // const distanceFromOriginSq = point.position.distanceToSquared(origin);
+        // if (distanceFromOriginSq > maxDistanceFromOrigin * maxDistanceFromOrigin) {
+        //     const correction = origin.clone().sub(point.position);
+        //     correction.setLength(distanceFromOriginSq - maxDistanceFromOrigin * maxDistanceFromOrigin);
+        //     correction.multiplyScalar(0.01);
+        //     point.vel.add(correction);
+        // }
 
         const neighbors = tree.query(new Sphere(point.position, perceptionRadius));
         point.flock(neighbors);
