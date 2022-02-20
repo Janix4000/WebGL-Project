@@ -36,17 +36,37 @@ export class Boid {
         return avgPosition.sub(this.position);
     }
 
+    separation(neighbors) {
+        const avgDifference = new THREE.Vector3(0, 0, 0);
+        for (const other of neighbors) {
+            if (other === this) {
+                continue;
+            }
+            avgDifference.add(this.position.clone().sub(other.position));
+        }
+        if (neighbors.length - 1 > 0) {
+            avgDifference.divideScalar(neighbors.length - 1);
+        }
+        return avgDifference;
+    }
+
     flock(neighbors) {
-        const alignment = this.align(neighbors);
-        const coh = this.cohesion(neighbors);
+        const a = 3;
+        const c = 0.5;
+        const s = 1.6;
 
-        const desired = alignment.clone().add(coh).divideScalar(2);
 
-        this.acc.add(desired.clone().sub(this.vel));
+        const alignment = this.align(neighbors).multiplyScalar(a);
+        const coh = this.cohesion(neighbors).multiplyScalar(c);
+        const sep = this.separation(neighbors).multiplyScalar(s);
+
+        this.acc.add(alignment.clone().sub(this.vel));
+        this.acc.add(coh.clone().sub(this.vel));
+        this.acc.add(sep.clone().sub(this.vel));
     }
 
     update(dt) {
-        this.vel.add(this.acc.clone().multiplyScalar(dt));
+        this.vel.add(this.acc.clone().multiplyScalar(dt)).setLength(0.4);
         this.position.add(this.vel.clone().multiplyScalar(dt));
         this.acc.multiplyScalar(0);
     }
