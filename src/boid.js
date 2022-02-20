@@ -9,6 +9,7 @@ export class Boid {
         const maxSpeed = 1;
         this.vel = new THREE.Vector3(this.random(-maxSpeed, maxSpeed), this.random(-maxSpeed, maxSpeed), this.random(-maxSpeed, maxSpeed));
         this.acc = new THREE.Vector3(0, 0, 0);
+        this.speed = 1.5;
     }
 
     getAlignment(neighbors) {
@@ -61,8 +62,8 @@ export class Boid {
     }
 
     update(dt) {
-        this.vel.add(this.acc.clone().multiplyScalar(dt)).setLength(0.8);
-        this.position.add(this.vel.clone().multiplyScalar(dt));
+        this.vel.add(this.acc.clone().multiplyScalar(dt));
+        this.position.add(this.vel.clone().setLength(this.speed).multiplyScalar(dt));
         this.acc.multiplyScalar(0);
     }
 }

@@ -20,18 +20,18 @@ let tree;
 let findRegion;
 
 const params = {
-    alignmentFactor: 1,
-    cohesionFactor: 1,
-    separationFactor: 1,
+    alignmentFactor: 4,
+    cohesionFactor: 0.5,
+    separationFactor: 4,
 
-    showHelpers: true
+    perceptionRadius: 0.3,
+    speed: 1.5,
+
+    simulationIsRunning: true,
+
+    showHelpers: false
 };
 
-const clipPlanes = [
-    new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
-    new THREE.Plane(new THREE.Vector3(0, - 1, 0), 0),
-    new THREE.Plane(new THREE.Vector3(0, 0, - 1), 0)
-];
 
 init();
 render();
@@ -67,12 +67,19 @@ function init_gui() {
 
     gui.add(params, 'showHelpers').name('show octa tree').onChange(function (value) {
         tree.helperBorder.visible = value;
-        render();
     });
+
+    gui.add(params, 'simulationIsRunning').name('run simulation');
 
     gui.add(params, 'alignmentFactor', 0, 5).step(0.05).name('alignment');
     gui.add(params, 'cohesionFactor', 0, 5).step(0.05).name('cohesion');
     gui.add(params, 'separationFactor', 0, 5).step(0.05).name('separation');
+    gui.add(params, 'perceptionRadius', 0, 2).step(0.05).name('perception radius');
+    gui.add(params, 'speed', 0, 4).step(0.05).name('speed of boids').onChange(function (value) {
+        for (const point of points) {
+            point.speed = value;
+        }
+    });
 }
 
 function init() {
@@ -83,6 +90,8 @@ function init() {
         new Cuboid(-treeWidth / 2, -treeWidth / 2, -treeWidth / 2, treeWidth, treeWidth, treeWidth),
         16, 6
     );
+
+    tree.helperBorder.visible = false;
 
     for (let i = 0; i < 3150; ++i) {
         const x = Math.random() * treeWidth - treeWidth / 2;
@@ -130,27 +139,19 @@ function onWindowResize() {
 
 }
 
-var updateTree = 5;
-var perceptionRadius = 0.5;
+var shouldUpdateTree = 5;
 
-function update() {
-    if (updateTree == 0) {
+function updateTree(dt) {
+    if (shouldUpdateTree == 0) {
         tree.rebuild(points);
-        updateTree = 20;
+        shouldUpdateTree = 10;
     }
-    updateTree--;
+    shouldUpdateTree--;
+}
 
-    // const speed = 0.005;
-    const origin = new THREE.Vector3(0, 0, 0);
-    const maxDistanceFromOrigin = 3;
-
+function updatePoints(dt) {
     for (const point of points) {
-        // const x = point.position.x - speed / 2 + Math.random() * speed;
-        // const y = point.position.y - speed / 2 + Math.random() * speed;
-        // const z = point.position.z - speed / 2 + Math.random() * speed;
-        // point.position.set(x, y, z);
 
-        point.model.material.color.setHex(0x00ff00);
         if (!tree.contains(point)) {
             let x = point.position.x;
             let y = point.position.y;
@@ -161,25 +162,31 @@ function update() {
             z -= Math.floor((z + dim / 2) / dim) * dim;
             point.position.set(x, y, z);
         }
-
-        // const distanceFromOriginSq = point.position.distanceToSquared(origin);
-        // if (distanceFromOriginSq > maxDistanceFromOrigin * maxDistanceFromOrigin) {
-        //     const correction = origin.clone().sub(point.position);
-        //     correction.setLength(distanceFromOriginSq - maxDistanceFromOrigin * maxDistanceFromOrigin);
-        //     correction.multiplyScalar(0.01);
-        //     point.vel.add(correction);
-        // }
-
-        const neighbors = tree.query(new Sphere(point.position, perceptionRadius));
+        const neighbors = tree.query(new Sphere(point.position, params.perceptionRadius));
         point.flock(neighbors, params.alignmentFactor, params.cohesionFactor, params.separationFactor);
 
-        point.update(1.0 / 60.0);
+        point.update(dt);
     }
+}
 
+function colorPoints() {
+    for (const point of points) {
+        point.model.material.color.setHex(0x00ff00);
+    }
     const foundPoints = tree.query(findRegion);
     for (const point of foundPoints) {
         point.model.material.color.setHex(0xffff00);
     }
+}
+
+function update() {
+    const dt = 1.0 / 60.0;
+    if (params.simulationIsRunning) {
+        updatePoints(dt);
+        updateTree(dt);
+    }
+    colorPoints();
+
 
     render();
     requestAnimationFrame(update);
